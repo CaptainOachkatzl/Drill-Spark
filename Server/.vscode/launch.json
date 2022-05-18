@@ -1,0 +1,45 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'drill_spark_server'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=drill_spark_server",
+          "--package=drill_spark_server"
+        ],
+        "filter": {
+          "name": "drill_spark_server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'drill_spark_server'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=drill_spark_server",
+          "--package=drill_spark_server"
+        ],
+        "filter": {
+          "name": "drill_spark_server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

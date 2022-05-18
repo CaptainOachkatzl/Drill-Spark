@@ -1,0 +1,15 @@
+[package]
+name = "drill_spark_server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.7.0", features = ["dynamic"] }
+tokio = { version = "1.18.2", features = ["full"] }
+rand = "0.8.5"
+serde = "1.0.137"
+typetag = "0.1.8"
+nameof = "1.2.2"
+xs_bevy_core_2d = { git = "https://github.com/CaptainOachkatzl/XSBevyCore2D" }
+bevy_spicy_networking = { git = "https://github.com/CaptainOachkatzl/bevy_spicy_networking" }
+drillspark_common_lib = { path = "../Common" }
