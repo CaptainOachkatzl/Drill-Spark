@@ -31,22 +31,14 @@ pub fn send_newly_revealed_tiles(
   mut q_tiles: Query<(Entity, &Position, &TileStatus, &mut RevealStatus), (With<Tile>, Changed<RevealStatus>)>,
   q_players: Query<(&Player, &MiningQueue)>,
 ) {
-  let mut player_updates = HashMap::new();
+  let mut tile_updates = HashMap::new();
   q_tiles.for_each_mut(|mut tile| {
-    tile.3.0.get_new().iter().for_each(|player| {
-      let Ok((player, _)) = q_players.get(*player) else {
-        error!("could not get connection ID for player");
-        return;
-      };
-
-      let updated_tiles = player_updates.entry(player.0).or_insert(vec![]);
-      updated_tiles.push((*tile.1, Some(*tile.2)));
+    tile.3 .0.get_new().iter().for_each(|&player| {
+      collect_updated_tiles(&mut tile_updates, &q_players, player, (*tile.1, Some(*tile.2)));
     });
   });
 
-  for (conn_id, updates) in player_updates.into_iter() {
-    send_tile_update_message(&*net, conn_id, TileUpdateMessage { tiles: updates } );
-  }
+  send_batched_tile_updates(&*net, tile_updates);
 }
 
 pub fn send_updated_tiles(
@@ -54,26 +46,40 @@ pub fn send_updated_tiles(
   q_tiles: Query<(Entity, &Position, &TileStatus, &RevealStatus), (With<Tile>, Changed<TileStatus>)>,
   q_players: Query<(&Player, &MiningQueue)>,
 ) {
-
-  let mut player_updates = HashMap::new();
+  let mut tile_updates = HashMap::new();
   q_tiles.for_each(|tile| {
-    tile.3.0.get_all().iter().for_each(|player| {
-      let Ok((player, _)) = q_players.get(*player) else {
-        error!("could not get connection ID for player");
-        return;
-      };
-
-      let updated_tiles = player_updates.entry(player.0).or_insert(vec![]);
-      updated_tiles.push((*tile.1, Some(*tile.2)));
+    tile.3 .0.get_all().iter().for_each(|&player| {
+      collect_updated_tiles(&mut tile_updates, &q_players, player, (*tile.1, Some(*tile.2)));
     });
   });
 
-  for (conn_id, updates) in player_updates.into_iter() {
-    send_tile_update_message(&*net, conn_id, TileUpdateMessage { tiles: updates } );
+  send_batched_tile_updates(&*net, tile_updates);
+}
+
+fn collect_updated_tiles(
+  player_updates: &mut HashMap<ConnectionId, Vec<(Position, Option<TileStatus>)>>,
+  q_players: &Query<(&Player, &MiningQueue)>,
+  player: Entity,
+  tile: (Position, Option<TileStatus>),
+) {
+  let Ok((player, _)) = q_players.get(player) else {
+    error!("could not get connection ID for player");
+    return;
+  };
+
+  player_updates.entry(player.0).or_insert(vec![]).push(tile);
+}
+
+fn send_batched_tile_updates(
+  net: &NetworkServer,
+  tile_updates: HashMap<ConnectionId, Vec<(Position, Option<TileStatus>)>>,
+) {
+  for (conn_id, updates) in tile_updates.into_iter() {
+    send_tile_update_message(&*net, conn_id, TileUpdateMessage { tiles: updates });
   }
 }
 
-pub fn send_tile_update_message(net: &NetworkServer, conn_id: ConnectionId, msg: TileUpdateMessage) {
+fn send_tile_update_message(net: &NetworkServer, conn_id: ConnectionId, msg: TileUpdateMessage) {
   match net.send_message(conn_id, msg) {
     Ok(_) => info!("sent tile update message"),
     Err(_) => error!("could not tile update message"),
