@@ -14,7 +14,7 @@ pub fn handle_build_requests(
   lookup: Res<ConnectionIdLookup>,
   grid: Res<Grid<Entity>>,
   mut q_players: Query<&mut ResourceStore, With<Player>>,
-  q_tile_type: Query<(&mut TileType, &mut Ownership, &mut RevealStatus), With<Tile>>,
+  q_tiles: Query<(&mut TileStatus, &mut Ownership, &mut RevealStatus), With<Tile>>,
 ) {
   for msg in new_messages.iter() {
     let Some(&player_entity) = lookup.0.get(&msg.source()) else {
@@ -35,8 +35,8 @@ pub fn handle_build_requests(
       }
     };
 
-    let mut get_tile_type = |entity| unsafe {
-      let tile = q_tile_type.get_unchecked(entity).unwrap();
+    let mut get_tile_status = |entity| unsafe {
+      let tile = q_tiles.get_unchecked(entity).unwrap();
       (tile.0, tile.1)
     };
     if build_from_blueprint(
@@ -45,15 +45,15 @@ pub fn handle_build_requests(
       msg.center,
       &*grid,
       resource_store.as_mut(),
-      &mut get_tile_type,
+      &mut get_tile_status,
     ) {
       match msg.blueprint {
         Buildings::Tower => {
-          let mut get_reveal_status = |entity| unsafe { q_tile_type.get_unchecked(entity).unwrap().2 };
+          let mut get_reveal_status = |entity| unsafe { q_tiles.get_unchecked(entity).unwrap().2 };
           reveal_area(player_entity, &*grid, &*surrounding_pattern(3), msg.center, &mut get_reveal_status);
         }
         Buildings::DrillDepot => {
-          let mut get_reveal_status = |entity| unsafe { q_tile_type.get_unchecked(entity).unwrap().2 };
+          let mut get_reveal_status = |entity| unsafe { q_tiles.get_unchecked(entity).unwrap().2 };
           reveal_area(player_entity, &*grid, &*surrounding_pattern(8), msg.center, &mut get_reveal_status);
         }
         _ => {}
@@ -70,7 +70,7 @@ pub fn build_from_blueprint<'a>(
   place_at: Position,
   grid: &Grid<Entity>,
   resource_store: &mut ResourceStore,
-  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileType>, Mut<'a, Ownership>),
+  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileStatus>, Mut<'a, Ownership>),
 ) -> bool {
   let blueprint_tile_map = blueprint.get_tile_map();
 
@@ -107,12 +107,12 @@ fn get_building_area(blueprint: &dyn BuildingBlueprint, grid: &Grid<Entity>, pla
 fn can_place_blueprint<'a>(
   blueprint_tile_map: &Grid<Option<TileType>>,
   building_area: &Grid<Entity>,
-  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileType>, Mut<'a, Ownership>),
+  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileStatus>, Mut<'a, Ownership>),
 ) -> bool {
   for blueprint_entry in blueprint_tile_map.iter_with_position() {
     if let (pos, Some(_)) = blueprint_entry {
-      let tile_type = get_tile(building_area.get_value_by_position(pos).unwrap()).0;
-      if *tile_type != TileType::Ground {
+      let tile_status = get_tile(building_area.get_value_by_position(pos).unwrap()).0;
+      if tile_status.tile_type != TileType::Ground {
         return false;
       }
     }
@@ -125,13 +125,13 @@ pub fn place_building<'a>(
   owner: Entity,
   blueprint_tile_map: &Grid<Option<TileType>>,
   building_area: &Grid<Entity>,
-  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileType>, Mut<'a, Ownership>),
+  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileStatus>, Mut<'a, Ownership>),
 ) {
   for (pos, &building_tile) in blueprint_tile_map.iter_with_position() {
     if let Some(building_tile) = building_tile {
       if let Some(entity) = building_area.get_value_by_position(pos) {
-        let (mut tile_type, mut tile_owner) = get_tile(entity);
-        *tile_type = building_tile;
+        let (mut tile_status, mut tile_owner) = get_tile(entity);
+        (*tile_status).tile_type = building_tile;
         *tile_owner = Ownership { 0: Some(owner) };
       }
     }
@@ -143,7 +143,7 @@ pub fn build_unchecked<'a>(
   blueprint: &dyn BuildingBlueprint,
   grid: &Grid<Entity>,
   place_at: Position,
-  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileType>, Mut<'a, Ownership>),
+  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileStatus>, Mut<'a, Ownership>),
 ) -> bool {
   let blueprint_tile_map = blueprint.get_tile_map();
 

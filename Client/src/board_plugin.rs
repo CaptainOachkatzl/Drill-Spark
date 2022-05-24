@@ -54,16 +54,16 @@ fn spawn_tiles(commands: &mut Commands, _asset_server: &Res<AssetServer>) {
   for coords in WORLD_SIZE.iter() {
     let transform = get_tile_transform(offset, coords, TILE_SIZE);
 
-    let tile_type = TileType::Block(Ores::Stone);
+    let tile_status = TileStatus::new(TileType::Block(Ores::Stone), false);
     let reveal_status = RevealStatus::from(false);
     let id = commands
       .spawn()
       .insert(Tile)
       .insert(coords)
-      .insert(tile_type)
+      .insert(tile_status)
       .insert(MineTag::from(false))
       .insert(reveal_status)
-      .insert_bundle(create_tile_sprite(tile_type, reveal_status, BLOCK_SIZE, transform))
+      .insert_bundle(create_tile_sprite(tile_status, reveal_status, BLOCK_SIZE, transform))
       .id();
 
     ids[index_translation::to_index(coords, WORLD_SIZE)] = id;

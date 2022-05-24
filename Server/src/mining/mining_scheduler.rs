@@ -48,21 +48,28 @@ pub fn update_mine_scheduler(
   time: Res<Time>,
   grid: Res<Grid<Entity>>,
   mut q_player_systems: Query<(Entity, &mut MiningQueue, &mut ResourceStore, &Position, &Player), With<Player>>,
-  mut tiles: Query<(&mut TileType, &Position, &mut RevealStatus), With<Tile>>,
+  mut tiles: Query<(&mut TileStatus, &Position, &mut RevealStatus), With<Tile>>,
 ) {
   let mut mined_blocks = BTreeMap::new();
 
   q_player_systems.for_each_mut(
     |(player_entity, mut mining_queue, mut resource_store, &spawn_point, &player)| {
       let get_position = |entity| *tiles.get(entity).unwrap().1;
-      let get_tile_type = |entity| *tiles.get(entity).unwrap().0;
+      let get_tile_type = |entity| tiles.get(entity).unwrap().0.tile_type;
       let is_revealed = |entity| tiles.get(entity).unwrap().2.0.contains(&player_entity);
       let mineable_params: IsMineableParams = (&grid, spawn_point, &get_position, &get_tile_type, &is_revealed);
       if let Some(finished_tile) = mining_queue.update(time.delta(), mineable_params) {
         let mut finished_tile = tiles.get_mut(finished_tile).unwrap();
-        add_mined_resource(&*net, player, *finished_tile.0, &mut resource_store);
-        *finished_tile.0 = TileType::Ground;
+        add_mined_resource(&*net, player, finished_tile.0.tile_type, &mut resource_store);
+        *finished_tile.0 = TileStatus::new(TileType::Ground, false);
         mined_blocks.insert(*finished_tile.1, player_entity);
+      }
+
+      if let Some(mined_tile) = mining_queue.get_current_mining_location() {
+        let mut mined_tile = tiles.get_mut(mined_tile).unwrap();
+        if !mined_tile.0.currently_mined {
+          mined_tile.0.currently_mined = true;
+        }
       }
     },
   );

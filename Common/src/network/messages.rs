@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 use typetag::serde;
 use xs_bevy_core_2d::Position;
 
-use crate::{Buildings, MineTag, TileType, Resources};
+use crate::{Buildings, MineTag, Resources, TileStatus};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TileUpdateMessage {
   pub position: Position,
-  pub tile_type: Option<TileType>, // None means tile is not revealed
+  pub tile_status: Option<TileStatus>, // None means tile is not revealed
 }
 
 #[typetag::serde]

@@ -39,13 +39,13 @@ fn spawn_tiles(commands: &mut Commands) {
   let mut ids = Box::new([Entity::from_raw(0); WORLD_HEIGHT * WORLD_WIDTH]);
 
   for coords in WORLD_SIZE.iter() {
-    let tile = create_ore_tile();
+    let tile_status = TileStatus::new(create_ore_tile(), false);
 
     let id = commands
       .spawn()
       .insert(Tile)
       .insert(coords)
-      .insert(tile)
+      .insert(tile_status)
       .insert(RevealStatus { 0: TodoList::new() })
       .insert(Ownership { 0: None })
       .id();

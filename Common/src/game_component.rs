@@ -2,7 +2,7 @@ pub mod ores;
 pub use ores::{Ores, get_random_ore_type};
 
 pub mod tile;
-pub use tile::{Tile, TileType};
+pub use tile::*;
 
 pub mod resources;
 pub use resources::*;

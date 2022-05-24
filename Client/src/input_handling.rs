@@ -12,7 +12,7 @@ pub fn handle_input(
   windows: Res<Windows>,
   net: Res<NetworkClient>,
   grid: Res<Grid<Entity>>,
-  mut tiles: Query<(&Position, &mut TileType, Entity, &mut MineTag), With<Tile>>,
+  mut tiles: Query<(&Position, &mut TileStatus, Entity, &mut MineTag), With<Tile>>,
 ) {
   let left_click = input.just_pressed(MouseButton::Left);
   let right_click = input.just_pressed(MouseButton::Right);
@@ -34,7 +34,7 @@ pub fn handle_input(
     .get_value_by_position(selected_pos)
     .expect("screen translation returned invalid logical position");
 
-  let selected_tile_type = *tiles.get(selected_entity).unwrap().1;
+  let selected_tile_type = tiles.get(selected_entity).unwrap().1.tile_type;
 
   if selected_tile_type.is_tile_type_minable() {
     let (_, _, _, mut minetag) = tiles.get_mut(selected_entity).unwrap();
@@ -52,7 +52,7 @@ pub fn handle_input(
     };
 
     let get_tile_type = |entity| {
-      return tiles.get(entity).unwrap().1;
+      return &tiles.get(entity).unwrap().1.tile_type;
     };
 
     if !allowed_to_build(&*blueprint, selected_pos, &*grid, &*resource_store, get_tile_type) {

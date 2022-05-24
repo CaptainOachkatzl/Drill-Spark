@@ -23,7 +23,7 @@ pub fn handle_connection_events(
   mut lookup: ResMut<ConnectionIdLookup>,
   mut network_events: EventReader<ServerNetworkEvent>,
   grid: Res<Grid<Entity>>,
-  tile_type_query: Query<(&mut TileType, &mut Ownership), With<Tile>>,
+  q_tiles: Query<(&mut TileStatus, &mut Ownership), With<Tile>>,
   reveal_query: Query<&mut RevealStatus, With<Tile>>,
 ) {
   for event in network_events.iter() {
@@ -37,7 +37,7 @@ pub fn handle_connection_events(
 
         lookup.0.insert(*conn_id, player_entity);
 
-        let mut get_tile_type = |entity| unsafe { tile_type_query.get_unchecked(entity).unwrap() };
+        let mut get_tile_type = |entity| unsafe { q_tiles.get_unchecked(entity).unwrap() };
         create_player_spawn(player_entity, &spawn_blueprint, spawn_point, &*grid, &mut get_tile_type);
 
         let mut get_reveal_status = |entity| unsafe { reveal_query.get_unchecked(entity).unwrap() };
@@ -74,9 +74,9 @@ fn create_player_spawn<'a>(
   spawn_blueprint: &dyn BuildingBlueprint,
   spawn_point: Position,
   grid: &Grid<Entity>,
-  get_tile_type: &mut impl FnMut(Entity) -> (Mut<'a, TileType>, Mut<'a, Ownership>),
+  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileStatus>, Mut<'a, Ownership>),
 ) {
-  build_unchecked(player, spawn_blueprint, grid, spawn_point, get_tile_type);
+  build_unchecked(player, spawn_blueprint, grid, spawn_point, get_tile);
 }
 
 fn randomize_spawn_center(blueprint: &dyn BuildingBlueprint, world_size: Size2D) -> Position {

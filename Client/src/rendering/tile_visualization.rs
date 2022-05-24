@@ -9,13 +9,12 @@ const COLOR_MINE_TAGGED: Color = Color::rgb(0., 0.8, 0.8);
 
 pub fn update_tile_color(
   mut blocks: Query<
-    (&mut Sprite, &TileType, &MineTag, &RevealStatus),
-    (With<Tile>, Or<(Changed<TileType>, Changed<MineTag>, Changed<RevealStatus>)>),
+    (&mut Sprite, &TileStatus, &MineTag, &RevealStatus),
+    (With<Tile>, Or<(Changed<TileStatus>, Changed<MineTag>, Changed<RevealStatus>)>),
   >,
 ) {
-  blocks.for_each_mut(|(mut sprite, &tile_type, &mine_tag, reveal_status)| {
-     let mined = false;
-     sprite.color = get_tile_color(mined, tile_type, mine_tag, *reveal_status);
+  blocks.for_each_mut(|(mut sprite, &tile_status, &mine_tag, &reveal_status)| {
+     sprite.color = get_tile_color(tile_status, mine_tag, reveal_status);
   });
 }
 
@@ -34,10 +33,10 @@ pub fn update_screen_translation(windows: Res<Windows>, mut screen_translation: 
   }
 }
 
-pub fn create_tile_sprite(tile_type: TileType, reveal_status: RevealStatus, tile_size: f32, transform: Transform) -> SpriteBundle {
+pub fn create_tile_sprite(tile_status:TileStatus, reveal_status: RevealStatus, tile_size: f32, transform: Transform) -> SpriteBundle {
   SpriteBundle {
     sprite: Sprite {
-      color: get_tile_color(false, tile_type, MineTag::from(false), reveal_status),
+      color: get_tile_color(tile_status, MineTag::from(false), reveal_status),
       custom_size: Some(Vec2::splat(tile_size)),
       ..Default::default()
     },
@@ -62,7 +61,7 @@ pub fn get_tile_transform(offset: Vec3, position: Position, tile_size: f32) -> T
   ))
 }
 
-fn get_tile_color(mined: bool, tile_type: TileType, mine_tag: MineTag, reveal_status: RevealStatus) -> Color {
+fn get_tile_color(tile_status:TileStatus, mine_tag: MineTag, reveal_status: RevealStatus) -> Color {
   if !reveal_status.0 {
     if mine_tag.into() {
       return COLOR_MINE_TAGGED;
@@ -71,12 +70,12 @@ fn get_tile_color(mined: bool, tile_type: TileType, mine_tag: MineTag, reveal_st
     }
   }
 
-  if mined && mine_tag.into() {
+  if tile_status.currently_mined && mine_tag.into() {
     return COLOR_MINED;
   }
 
   #[allow(unreachable_patterns)]
-  match tile_type {
+  match tile_status.tile_type {
     TileType::Block(ore_type) => { 
       if mine_tag.into() {
         COLOR_MINE_TAGGED
