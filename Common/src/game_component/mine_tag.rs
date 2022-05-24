@@ -6,7 +6,7 @@ pub struct MineTag(pub bool);
 
 impl From<bool> for MineTag {
   fn from(val: bool) -> Self {
-    MineTag { 0: val }
+    Self { 0: val }
   }
 }
 
