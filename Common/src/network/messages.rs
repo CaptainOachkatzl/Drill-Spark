@@ -10,8 +10,7 @@ use crate::{Buildings, MineTag, Resources, TileStatus};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TileUpdateMessage {
-  pub position: Position,
-  pub tile_status: Option<TileStatus>, // None means tile is not revealed
+  pub tiles: Vec<(Position, Option<TileStatus>)> // tile status = none -> not revealed
 }
 
 #[typetag::serde]
