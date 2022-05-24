@@ -54,7 +54,7 @@ fn spawn_tiles(commands: &mut Commands, _asset_server: &Res<AssetServer>) {
   for coords in WORLD_SIZE.iter() {
     let transform = get_tile_transform(offset, coords, TILE_SIZE);
 
-    let tile_status = TileStatus::new(TileType::Block(Ores::Stone), false);
+    let tile_status = TileStatus::new(TileType::Block(Ores::Stone), false, None);
     let reveal_status = RevealStatus::from(false);
     let id = commands
       .spawn()

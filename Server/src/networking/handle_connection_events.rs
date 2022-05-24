@@ -11,7 +11,7 @@ use xs_bevy_core_2d::{patterns::surrounding_pattern, *};
 use crate::{
   buildings::building_process::build_unchecked,
   mining::MiningQueue,
-  player::{Ownership, Player},
+  player::{Player, PlayerId, IdGenerator},
   revealing::{reveal_area, RevealStatus},
   settings::WORLD_SIZE,
 };
@@ -20,10 +20,11 @@ use super::ConnectionIdLookup;
 
 pub fn handle_connection_events(
   mut commands: Commands,
+  id_generator: Res<IdGenerator>,
   mut lookup: ResMut<ConnectionIdLookup>,
   mut network_events: EventReader<ServerNetworkEvent>,
   grid: Res<Grid<Entity>>,
-  q_tiles: Query<(&mut TileStatus, &mut Ownership), With<Tile>>,
+  q_tiles: Query<&mut TileStatus, With<Tile>>,
   reveal_query: Query<&mut RevealStatus, With<Tile>>,
 ) {
   for event in network_events.iter() {
@@ -31,14 +32,16 @@ pub fn handle_connection_events(
       ServerNetworkEvent::Connected(conn_id) => {
         info!("New player connected: {}", conn_id);
 
+        let player_id = PlayerId(id_generator.next());
+
         let spawn_blueprint = WarpGateBlueprint::new();
         let spawn_point = randomize_spawn_center(&spawn_blueprint, WORLD_SIZE);
-        let player_entity = setup_player(&mut commands, conn_id, spawn_point);
+        let player_entity = setup_player(&mut commands, player_id, conn_id, spawn_point);
 
         lookup.0.insert(*conn_id, player_entity);
 
         let mut get_tile_type = |entity| unsafe { q_tiles.get_unchecked(entity).unwrap() };
-        create_player_spawn(player_entity, &spawn_blueprint, spawn_point, &*grid, &mut get_tile_type);
+        create_player_spawn(player_id, &spawn_blueprint, spawn_point, &*grid, &mut get_tile_type);
 
         let mut get_reveal_status = |entity| unsafe { reveal_query.get_unchecked(entity).unwrap() };
         reveal_area(
@@ -59,10 +62,11 @@ pub fn handle_connection_events(
   }
 }
 
-fn setup_player<'a>(commands: &mut Commands, conn_id: &ConnectionId, spawn_point: Position) -> Entity {
+fn setup_player<'a>(commands: &mut Commands, player_id: PlayerId, conn_id: &ConnectionId, spawn_point: Position) -> Entity {
   commands
     .spawn()
     .insert(Player(*conn_id))
+    .insert(player_id)
     .insert(MiningQueue::new())
     .insert(ResourceStore::new())
     .insert(spawn_point)
@@ -70,13 +74,13 @@ fn setup_player<'a>(commands: &mut Commands, conn_id: &ConnectionId, spawn_point
 }
 
 fn create_player_spawn<'a>(
-  player: Entity,
+  id: PlayerId,
   spawn_blueprint: &dyn BuildingBlueprint,
   spawn_point: Position,
   grid: &Grid<Entity>,
-  get_tile: &mut impl FnMut(Entity) -> (Mut<'a, TileStatus>, Mut<'a, Ownership>),
+  get_tile: &mut impl FnMut(Entity) -> Mut<'a, TileStatus>,
 ) {
-  build_unchecked(player, spawn_blueprint, grid, spawn_point, get_tile);
+  build_unchecked(id, spawn_blueprint, grid, spawn_point, get_tile);
 }
 
 fn randomize_spawn_center(blueprint: &dyn BuildingBlueprint, world_size: Size2D) -> Position {

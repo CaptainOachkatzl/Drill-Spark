@@ -8,9 +8,8 @@ use xs_bevy_core_2d::*;
 use crate::{
   mining::{handle_minetag_messages, update_mine_scheduler},
   networking::{handle_connection_events, ConnectionIdLookup},
-  player::Ownership,
   revealing::*,
-  settings::*, buildings::building_process::handle_build_requests,
+  settings::*, buildings::building_process::handle_build_requests, player::IdGenerator,
 };
 
 pub struct HostWorldPlugin;
@@ -18,6 +17,7 @@ pub struct HostWorldPlugin;
 impl Plugin for HostWorldPlugin {
   fn build(&self, app: &mut App) {
     app
+      .insert_resource(IdGenerator::new())
       .insert_resource(ConnectionIdLookup { 0: HashMap::new() })
       .add_startup_system(initialize_world)
       .add_system_to_stage(CoreStage::PreUpdate, handle_connection_events)
@@ -39,7 +39,7 @@ fn spawn_tiles(commands: &mut Commands) {
   let mut ids = Box::new([Entity::from_raw(0); WORLD_HEIGHT * WORLD_WIDTH]);
 
   for coords in WORLD_SIZE.iter() {
-    let tile_status = TileStatus::new(create_ore_tile(), false);
+    let tile_status = TileStatus::new(create_ore_tile(), false, None);
 
     let id = commands
       .spawn()
@@ -47,7 +47,6 @@ fn spawn_tiles(commands: &mut Commands) {
       .insert(coords)
       .insert(tile_status)
       .insert(RevealStatus { 0: TodoList::new() })
-      .insert(Ownership { 0: None })
       .id();
 
     ids[index_translation::to_index(coords, WORLD_SIZE)] = id;

@@ -9,7 +9,7 @@ use super::{IsMineableParams, MiningQueue};
 
 use crate::{
   networking::ConnectionIdLookup,
-  player::Player,
+  player::{Player, PlayerId},
   revealing::{reveal_area, RevealStatus},
 };
 
@@ -47,13 +47,13 @@ pub fn update_mine_scheduler(
   net: Res<NetworkServer>,
   time: Res<Time>,
   grid: Res<Grid<Entity>>,
-  mut q_player_systems: Query<(Entity, &mut MiningQueue, &mut ResourceStore, &Position, &Player), With<Player>>,
+  mut q_player_systems: Query<(Entity, &mut MiningQueue, &mut ResourceStore, &Position, &Player, &PlayerId), With<Player>>,
   mut tiles: Query<(&mut TileStatus, &Position, &mut RevealStatus), With<Tile>>,
 ) {
   let mut mined_blocks = BTreeMap::new();
 
   q_player_systems.for_each_mut(
-    |(player_entity, mut mining_queue, mut resource_store, &spawn_point, &player)| {
+    |(player_entity, mut mining_queue, mut resource_store, &spawn_point, &player, &id)| {
       let get_position = |entity| *tiles.get(entity).unwrap().1;
       let get_tile_type = |entity| tiles.get(entity).unwrap().0.tile_type;
       let is_revealed = |entity| tiles.get(entity).unwrap().2.0.contains(&player_entity);
@@ -61,7 +61,7 @@ pub fn update_mine_scheduler(
       if let Some(finished_tile) = mining_queue.update(time.delta(), mineable_params) {
         let mut finished_tile = tiles.get_mut(finished_tile).unwrap();
         add_mined_resource(&*net, player, finished_tile.0.tile_type, &mut resource_store);
-        *finished_tile.0 = TileStatus::new(TileType::Ground, false);
+        *finished_tile.0 = TileStatus::new(TileType::Ground, false, Some(id.0));
         mined_blocks.insert(*finished_tile.1, player_entity);
       }
 

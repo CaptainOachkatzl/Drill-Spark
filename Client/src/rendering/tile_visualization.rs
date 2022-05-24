@@ -10,11 +10,14 @@ const COLOR_MINE_TAGGED: Color = Color::rgb(0., 0.8, 0.8);
 pub fn update_tile_color(
   mut blocks: Query<
     (&mut Sprite, &TileStatus, &MineTag, &RevealStatus),
-    (With<Tile>, Or<(Changed<TileStatus>, Changed<MineTag>, Changed<RevealStatus>)>),
+    (
+      With<Tile>,
+      Or<(Changed<TileStatus>, Changed<MineTag>, Changed<RevealStatus>)>,
+    ),
   >,
 ) {
   blocks.for_each_mut(|(mut sprite, &tile_status, &mine_tag, &reveal_status)| {
-     sprite.color = get_tile_color(tile_status, mine_tag, reveal_status);
+    sprite.color = get_tile_color(tile_status, mine_tag, reveal_status);
   });
 }
 
@@ -33,7 +36,12 @@ pub fn update_screen_translation(windows: Res<Windows>, mut screen_translation: 
   }
 }
 
-pub fn create_tile_sprite(tile_status:TileStatus, reveal_status: RevealStatus, tile_size: f32, transform: Transform) -> SpriteBundle {
+pub fn create_tile_sprite(
+  tile_status: TileStatus,
+  reveal_status: RevealStatus,
+  tile_size: f32,
+  transform: Transform,
+) -> SpriteBundle {
   SpriteBundle {
     sprite: Sprite {
       color: get_tile_color(tile_status, MineTag::from(false), reveal_status),
@@ -61,7 +69,7 @@ pub fn get_tile_transform(offset: Vec3, position: Position, tile_size: f32) -> T
   ))
 }
 
-fn get_tile_color(tile_status:TileStatus, mine_tag: MineTag, reveal_status: RevealStatus) -> Color {
+fn get_tile_color(tile_status: TileStatus, mine_tag: MineTag, reveal_status: RevealStatus) -> Color {
   if !reveal_status.0 {
     if mine_tag.into() {
       return COLOR_MINE_TAGGED;
@@ -76,21 +84,31 @@ fn get_tile_color(tile_status:TileStatus, mine_tag: MineTag, reveal_status: Reve
 
   #[allow(unreachable_patterns)]
   match tile_status.tile_type {
-    TileType::Block(ore_type) => { 
+    TileType::Block(ore_type) => {
       if mine_tag.into() {
         COLOR_MINE_TAGGED
       } else {
         get_color_from_ore_type(ore_type)
       }
-    },
-    TileType::Ground => Color::ANTIQUE_WHITE,
-    TileType::PlayerGround => Color::RED,
+    }
+    TileType::Ground => get_ground_color(tile_status.owner),
     TileType::Building(building_type) => match building_type {
       Buildings::WarpGate => Color::PURPLE,
       Buildings::Tower => Color::GREEN,
       Buildings::DrillDepot => Color::ORANGE,
     },
     _ => Color::PINK, // debug
+  }
+}
+
+fn get_ground_color(owner: Option<u8>) -> Color {
+  if let Some(id) = owner {
+    match id % 2 {
+      0 => Color::rgb(1.0, 0.8, 0.8),
+      _ => Color::rgb(0.8, 0.8, 1.0),
+    }
+  } else {
+    Color::ANTIQUE_WHITE
   }
 }
 

@@ -9,7 +9,6 @@ pub struct Tile;
 #[derive(Serialize, Deserialize, Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TileType {
   Ground,
-  PlayerGround,
   Block(Ores),
   Building(Buildings),
 }
@@ -28,13 +27,15 @@ impl TileType {
 pub struct TileStatus {
   pub tile_type: TileType,
   pub currently_mined: bool,
+  pub owner: Option<u8>,
 }
 
 impl TileStatus {
-  pub fn new(tile_type: TileType, currently_mined: bool) -> Self {
+  pub fn new(tile_type: TileType, currently_mined: bool, owner: Option<u8>) -> Self {
     Self {
       tile_type,
       currently_mined,
+      owner,
     }
   }
 }
