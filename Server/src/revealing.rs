@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_spicy_networking::NetworkServer;
-use drillspark_common_lib::{game_component::*, RevealMessage};
+use drillspark_common_lib::{game_component::*, TileUpdateMessage};
 use xs_bevy_core_2d::{patterns::*, Grid, Position, TodoList};
 
 use crate::player::Player;
@@ -31,7 +31,7 @@ pub fn send_newly_revealed_tiles(
 ) {
   q_tiles.for_each_mut(|mut tile| {
     for player in tile.2.0.get_new().iter() {
-      let msg = RevealMessage { position: *tile.0, tile_type: Some(*tile.1) };
+      let msg = TileUpdateMessage { position: *tile.0, tile_type: Some(*tile.1) };
       let Ok(player_id) = q_players.get(*player) else {
         error!("could not get connection ID for player");
         return;
@@ -51,7 +51,7 @@ pub fn send_updated_tiles(
 ) {
   q_tiles.for_each(|tile| {
     for &player_entity in tile.2.0.get_all().iter() {
-      let msg = RevealMessage { position: *tile.0, tile_type: Some(*tile.1) };
+      let msg = TileUpdateMessage { position: *tile.0, tile_type: Some(*tile.1) };
       let Ok(player_id) = q_players.get(player_entity) else {
         error!("could not get connection ID for player");
         return;

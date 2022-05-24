@@ -26,7 +26,7 @@ impl Plugin for BoardPlugin {
     let translation = ScreenTranslation::new(screen_view, WORLD_SIZE);
 
     app
-      .listen_for_client_message::<RevealMessage>()
+      .listen_for_client_message::<TileUpdateMessage>()
       .listen_for_client_message::<ResourceMessage>()
       .insert_resource(translation)
       .insert_resource(ResourceStore::new())

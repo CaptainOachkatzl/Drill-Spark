@@ -9,16 +9,16 @@ use xs_bevy_core_2d::Position;
 use crate::{Buildings, MineTag, TileType, Resources};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct RevealMessage {
+pub struct TileUpdateMessage {
   pub position: Position,
   pub tile_type: Option<TileType>, // None means tile is not revealed
 }
 
 #[typetag::serde]
-impl NetworkMessage for RevealMessage {}
+impl NetworkMessage for TileUpdateMessage {}
 
-impl ClientMessage for RevealMessage {
-  const NAME: &'static str = name_of!(type RevealMessage);
+impl ClientMessage for TileUpdateMessage {
+  const NAME: &'static str = name_of!(type TileUpdateMessage);
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

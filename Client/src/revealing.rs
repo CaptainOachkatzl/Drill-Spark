@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_spicy_networking::NetworkData;
-use drillspark_common_lib::{TileType, Tile, RevealMessage};
+use drillspark_common_lib::{TileType, Tile, TileUpdateMessage};
 use xs_bevy_core_2d::Grid;
 
 #[derive(Component, Debug, Clone, Copy, Eq, PartialEq)]
@@ -20,7 +20,7 @@ impl Into<bool> for RevealStatus {
 
 pub fn revealing(
   grid: Res<Grid<Entity>>,
-  mut new_messages: EventReader<NetworkData<RevealMessage>>,
+  mut new_messages: EventReader<NetworkData<TileUpdateMessage>>,
   mut q_reveal_status: Query<(&mut RevealStatus, &mut TileType), With<Tile>>,
 ) {
   new_messages.iter().for_each(|msg| {
