@@ -13,6 +13,7 @@ mod revealing;
 mod settings;
 mod networking;
 mod player;
+mod resources;
 
 use crate::host_world_plugin::HostWorldPlugin;
 

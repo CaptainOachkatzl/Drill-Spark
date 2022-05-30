@@ -6,10 +6,13 @@ use drillspark_common_lib::*;
 use xs_bevy_core_2d::*;
 
 use crate::{
+  buildings::building_process::handle_build_requests,
   mining::{handle_minetag_messages, update_mine_scheduler},
   networking::{handle_connection_events, ConnectionIdLookup},
+  player::IdGenerator,
+  resources::update_player_resource_counter,
   revealing::*,
-  settings::*, buildings::building_process::handle_build_requests, player::IdGenerator,
+  settings::*,
 };
 
 pub struct HostWorldPlugin;
@@ -26,6 +29,7 @@ impl Plugin for HostWorldPlugin {
       .add_system(handle_minetag_messages)
       .add_system(update_mine_scheduler)
       .add_system(handle_build_requests)
+      .add_system(update_player_resource_counter)
       .add_system(send_newly_revealed_tiles)
       .add_system(send_updated_tiles);
   }
