@@ -1,21 +1,20 @@
 #![feature(let_else)]
 
-use std::{net::SocketAddr, fs};
 use crate::settings::*;
-use bevy::{
-  prelude::*,
-  window::WindowResizeConstraints,
-};
+use bevy::{prelude::*, window::WindowResizeConstraints};
 use bevy_spicy_networking::{ClientPlugin, NetworkClient, NetworkSettings};
 use board_plugin::BoardPlugin;
+use build_menu_plugin::BuildMenuPlugin;
+use std::{fs, net::SocketAddr};
 
 mod board_plugin;
-mod input_handling;
-mod settings;
-mod revealing;
+mod build_menu_plugin;
 mod buildings;
-mod resources;
+mod input_handling;
 mod rendering;
+mod resources;
+mod revealing;
+mod settings;
 
 fn main() {
   App::new()
@@ -32,6 +31,7 @@ fn main() {
     })
     .add_plugins(DefaultPlugins)
     .add_plugin(ClientPlugin)
+    .add_plugin(BuildMenuPlugin)
     .add_plugin(BoardPlugin)
     .add_startup_system(connect)
     .run();

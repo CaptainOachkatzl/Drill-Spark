@@ -5,7 +5,6 @@ use xs_bevy_core_2d::*;
 
 use crate::input_handling::handle_input;
 use crate::rendering::*;
-use crate::resources::handle_resource_message;
 use crate::revealing::RevealStatus;
 use crate::{revealing::revealing, settings::*};
 
@@ -27,22 +26,17 @@ impl Plugin for BoardPlugin {
 
     app
       .listen_for_client_message::<TileUpdateMessage>()
-      .listen_for_client_message::<ResourceMessage>()
       .insert_resource(translation)
-      .insert_resource(ResourceStore::new())
       .add_startup_system(initialize_world)
       .add_system(handle_input)
       .add_system(update_tile_color)
       .add_system(update_screen_translation)
-      .add_system(revealing)
-      .add_system(handle_resource_message)
-      .add_system(render_resource_text);
+      .add_system(revealing);
   }
 }
 
 pub fn initialize_world(mut commands: Commands, asset_server: Res<AssetServer>) {
   commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-  spawn_resource_text(&mut commands, WINDOW_WIDTH, WINDOW_HEIGHT, &asset_server);
   spawn_tiles(&mut commands, &asset_server);
 }
 
