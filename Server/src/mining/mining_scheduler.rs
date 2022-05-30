@@ -47,7 +47,17 @@ pub fn update_mine_scheduler(
   net: Res<NetworkServer>,
   time: Res<Time>,
   grid: Res<Grid<Entity>>,
-  mut q_player_systems: Query<(Entity, &mut MiningQueue, &mut ResourceStore, &Position, &Player, &PlayerId), With<Player>>,
+  mut q_player_systems: Query<
+    (
+      Entity,
+      &mut MiningQueue,
+      &mut ResourceStore,
+      &Position,
+      &Player,
+      &PlayerId,
+    ),
+    With<Player>,
+  >,
   mut tiles: Query<(&mut TileStatus, &Position, &mut RevealStatus), With<Tile>>,
 ) {
   let mut mined_blocks = BTreeMap::new();
@@ -56,8 +66,16 @@ pub fn update_mine_scheduler(
     |(player_entity, mut mining_queue, mut resource_store, &spawn_point, &player, &id)| {
       let get_position = |entity| *tiles.get(entity).unwrap().1;
       let get_tile_type = |entity| tiles.get(entity).unwrap().0.tile_type;
-      let is_revealed = |entity| tiles.get(entity).unwrap().2.0.contains(&player_entity);
-      let mineable_params: IsMineableParams = (&grid, spawn_point, &get_position, &get_tile_type, &is_revealed);
+      let is_revealed = |entity| tiles.get(entity).unwrap().2 .0.contains(&player_entity);
+      let is_owned = |entity| tiles.get(entity).unwrap().0.owner == Some(id.0);
+      let mineable_params: IsMineableParams = (
+        &grid,
+        spawn_point,
+        &get_position,
+        &get_tile_type,
+        &is_revealed,
+        &is_owned,
+      );
       if let Some(finished_tile) = mining_queue.update(time.delta(), mineable_params) {
         let mut finished_tile = tiles.get_mut(finished_tile).unwrap();
         add_mined_resource(&*net, player, finished_tile.0.tile_type, &mut resource_store);

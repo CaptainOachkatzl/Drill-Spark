@@ -12,6 +12,7 @@ pub type IsMineableParams<'a> = (
   &'a dyn Fn(Entity) -> Position,
   &'a dyn Fn(Entity) -> TileType,
   &'a dyn Fn(Entity) -> bool,
+  &'a dyn Fn(Entity) -> bool,
 );
 
 #[derive(Component)]
@@ -110,7 +111,7 @@ impl MiningQueue {
     &self,
     entity: Entity,
     just_finished: Option<Entity>,
-    (grid, warpgate_position, get_position, get_tile_type, is_revealed): IsMineableParams,
+    (grid, warpgate_position, get_position, get_tile_type, is_revealed, is_owned): IsMineableParams,
   ) -> bool {
 
     let tile_type = get_tile_type(entity);
@@ -121,7 +122,7 @@ impl MiningQueue {
     }
 
     let is_pathable_tile = |entity| {
-      if !is_revealed(entity) {
+      if !is_revealed(entity) || !is_owned(entity) {
         return false;
       }
 
