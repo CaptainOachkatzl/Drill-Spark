@@ -1,6 +1,6 @@
 #![feature(let_else)]
 
-use std::net::SocketAddr;
+use std::{net::SocketAddr, fs};
 use crate::settings::*;
 use bevy::{
   prelude::*,
@@ -38,7 +38,12 @@ fn main() {
 }
 
 fn connect(mut net: ResMut<NetworkClient>) {
-  let ip_address = "127.0.0.1".parse().unwrap();
+  let mut ip_address = "127.0.0.1".parse().unwrap();
+  if let Ok(file_content) = fs::read_to_string("server.config") {
+    if let Ok(file_address) = file_content.parse() {
+      ip_address = file_address;
+    }
+  }
 
   info!("Address of the server: {}", ip_address);
 
