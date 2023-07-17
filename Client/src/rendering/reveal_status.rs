@@ -4,9 +4,9 @@ use bevy::prelude::Component;
 pub struct RevealStatus(pub bool);
 
 impl From<bool> for RevealStatus {
-  fn from(val: bool) -> Self {
-    Self { 0: val }
-  }
+    fn from(val: bool) -> Self {
+        Self { 0: val }
+    }
 }
 
 impl Into<bool> for RevealStatus {
