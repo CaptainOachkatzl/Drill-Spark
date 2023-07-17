@@ -1,5 +1,3 @@
-#![feature(let_else)]
-
 pub mod game_component;
 pub use game_component::*;
 
