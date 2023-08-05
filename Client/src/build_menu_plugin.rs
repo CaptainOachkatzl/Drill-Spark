@@ -36,7 +36,7 @@ fn initilize_build_icons(mut commands: Commands, asset_server: Res<AssetServer>)
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        width: Val::Px(200.0),
+                        width: Val::Percent(100.0),
                         height: Val::Percent(100.0),
                         border: UiRect::all(Val::Px(2.0)),
                         ..default()
