@@ -1,13 +1,14 @@
-#![feature(let_else)]
-
 use crate::settings::*;
-use bevy::{prelude::*, window::WindowResizeConstraints};
+use bevy::{
+    prelude::*,
+    window::{WindowResizeConstraints, WindowResolution},
+};
 use bevy_spicy_networking::{ClientPlugin, NetworkClient, NetworkSettings};
 use board_plugin::BoardPlugin;
 use build_menu_plugin::BuildMenuPlugin;
 use std::{fs, net::SocketAddr};
 
-mod board_plugin;
+pub mod board_plugin;
 mod build_menu_plugin;
 mod buildings;
 mod input_handling;
@@ -18,22 +19,25 @@ mod settings;
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Drill Spark".to_string(),
-            width: WINDOW_WIDTH,
-            height: WINDOW_HEIGHT,
-            resize_constraints: WindowResizeConstraints {
-                min_width: WINDOW_WIDTH,
-                min_height: WINDOW_HEIGHT,
+        .add_plugins((
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Drill Spark".to_string(),
+                    resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
+                    resize_constraints: WindowResizeConstraints {
+                        min_width: WINDOW_WIDTH,
+                        min_height: WINDOW_HEIGHT,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
                 ..Default::default()
-            },
-            ..Default::default()
-        })
-        .add_plugins(DefaultPlugins)
-        .add_plugin(ClientPlugin)
-        .add_plugin(BuildMenuPlugin)
-        .add_plugin(BoardPlugin)
-        .add_startup_system(connect)
+            }),
+            ClientPlugin,
+            BuildMenuPlugin,
+            BoardPlugin,
+        ))
+        .add_systems(Startup, connect)
         .run();
 }
 

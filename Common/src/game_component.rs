@@ -1,5 +1,5 @@
 pub mod ores;
-pub use ores::{Ores, get_random_ore_type};
+pub use ores::{get_random_ore_type, Ores};
 
 pub mod tile;
 pub use tile::*;
@@ -12,3 +12,9 @@ pub use buildings::*;
 
 pub mod mine_tag;
 pub use mine_tag::*;
+
+pub mod game_grid;
+pub use game_grid::*;
+
+pub mod position;
+pub use position::*;

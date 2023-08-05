@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use drillspark_common_lib::game_component::*;
-use xs_bevy_core_2d::*;
+use xs_bevy_core_2d::{Position, Size2D};
 
-use crate::revealing::RevealStatus;
+use crate::{board_plugin::ScreenTranslation, revealing::RevealStatus};
 
 const COLOR_MINED: Color = Color::CYAN;
 const COLOR_MINE_TAGGED: Color = Color::rgb(0., 0.8, 0.8);
@@ -18,19 +18,18 @@ pub fn update_tile_color(
     });
 }
 
-pub fn update_screen_translation(windows: Res<Windows>, mut screen_translation: ResMut<ScreenTranslation>) {
-    if let Some(window) = windows.get_primary() {
-        let size = screen_translation.screen_view.size;
+pub fn update_screen_translation(windows: Query<&Window>, mut screen_translation: ResMut<ScreenTranslation>) {
+    let window = windows.single();
+    let size = screen_translation.0.screen_view.size;
 
-        if (window.width() as usize) < size.width + 100 || (window.height() as usize) < size.height {
-            return;
-        }
-
-        let offset_x = (window.width() as usize - 100 - size.width) / 2 + 100;
-        let offset_y = (window.height() as usize - size.height) / 2;
-
-        screen_translation.screen_view.offset = Position::from((offset_x, offset_y));
+    if (window.width() as usize) < size.width + 100 || (window.height() as usize) < size.height {
+        return;
     }
+
+    let offset_x = (window.width() as usize - 100 - size.width) / 2 + 100;
+    let offset_y = (window.height() as usize - size.height) / 2;
+
+    screen_translation.0.screen_view.offset = Position::from((offset_x, offset_y));
 }
 
 pub fn create_tile_sprite(tile_status: TileStatus, reveal_status: RevealStatus, tile_size: f32, transform: Transform) -> SpriteBundle {

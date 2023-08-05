@@ -8,8 +8,8 @@ pub const FRAME_TIME: f64 = 1. / FPS;
 pub const WORLD_WIDTH: usize = 80;
 pub const WORLD_HEIGHT: usize = 40;
 pub const WORLD_SIZE: Size2D = Size2D {
-  width: WORLD_WIDTH,
-  height: WORLD_HEIGHT,
+    width: WORLD_WIDTH,
+    height: WORLD_HEIGHT,
 };
 
 pub const BLOCK_SIZE: f32 = 16.;

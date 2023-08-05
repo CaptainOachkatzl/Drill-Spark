@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use drillspark_common_lib::{blueprints::BuildingBlueprint, *};
+use drillspark_common_lib::{blueprints::BuildingBlueprint, ResourceStore, TileType};
 use xs_bevy_core_2d::*;
 
 pub fn allowed_to_build<'a>(

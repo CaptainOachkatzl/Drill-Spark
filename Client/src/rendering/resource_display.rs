@@ -12,17 +12,16 @@ pub fn render_resource_text(resource_store: Res<ResourceStore>, mut q_text_posit
 pub fn spawn_resource_text(asset_server: &Res<AssetServer>) -> TextBundle {
     TextBundle {
         style: Style {
-            margin: Rect::all(Val::Px(TEXT_INSPACING)),
+            margin: UiRect::all(Val::Px(TEXT_INSPACING)),
             ..default()
         },
-        text: Text::with_section(
+        text: Text::from_section(
             get_resource_text(&ResourceStore::new()),
             TextStyle {
                 font: asset_server.load("fonts/FiraSans-Light.ttf"),
                 font_size: FONT_SIZE,
                 color: Color::WHITE,
             },
-            Default::default(),
         ),
         ..default()
     }

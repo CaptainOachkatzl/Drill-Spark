@@ -1,12 +1,12 @@
 use std::collections::BTreeMap;
 
-use bevy::prelude::Component;
+use bevy::prelude::*;
 
 use crate::Resources;
 
 use super::Transaction;
 
-#[derive(Component)]
+#[derive(Component, Resource)]
 pub struct ResourceStore {
   containers: BTreeMap<Resources, usize>,
 }

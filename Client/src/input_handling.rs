@@ -1,17 +1,16 @@
-use bevy::{prelude::*, window::Windows};
+use bevy::prelude::*;
 use bevy_spicy_networking::NetworkClient;
 use drillspark_common_lib::{blueprints::*, game_component::*, *};
-use xs_bevy_core_2d::{translation::ScreenTranslation, *};
 
-use crate::buildings::allowed_to_build;
+use crate::{board_plugin::ScreenTranslation, buildings::allowed_to_build};
 
 pub fn handle_input(
     input: ResMut<Input<MouseButton>>,
     screen_translation: Res<ScreenTranslation>,
     resource_store: Res<ResourceStore>,
-    windows: Res<Windows>,
+    windows: Query<&Window>,
     net: Res<NetworkClient>,
-    grid: Res<Grid<Entity>>,
+    grid: Res<GameGrid>,
     mut tiles: Query<(&Position, &mut TileStatus, Entity, &mut MineTag), With<Tile>>,
 ) {
     let left_click = input.just_pressed(MouseButton::Left);
@@ -20,17 +19,21 @@ pub fn handle_input(
     if !left_click && !right_click {
         return;
     }
-    let Some(window) = windows.get_primary() else {
-        return;
-    };
+    let window = windows.single();
     let Some(cursor_pos) = window.cursor_position() else {
         return;
     };
-    let Some(selected_pos) = screen_translation.get_logical_position(cursor_pos.x as usize, cursor_pos.y as usize) else {
+    println!("cursor x: {} - cursor y: {}", cursor_pos.x, cursor_pos.y);
+    let Some(selected_pos) = screen_translation
+        .0
+        .get_logical_position(cursor_pos.x as usize, cursor_pos.y as usize)
+    else {
         return;
     };
 
+    println!("position x: {} - position y: {}", selected_pos.x, selected_pos.y);
     let selected_entity = grid
+        .0
         .get_value_by_position(selected_pos)
         .expect("screen translation returned invalid logical position");
 
