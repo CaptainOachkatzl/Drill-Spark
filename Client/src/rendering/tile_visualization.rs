@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use drillspark_common_lib::game_component::*;
 use xs_bevy_core_2d::{Position, Size2D};
 
-use crate::{board_plugin::ScreenTranslation, revealing::RevealStatus};
+use crate::{board_plugin::ScreenTranslation, revealing::RevealStatus, settings::MENU_WIDTH};
 
 const COLOR_MINED: Color = Color::CYAN;
 const COLOR_MINE_TAGGED: Color = Color::rgb(0., 0.8, 0.8);
@@ -26,7 +26,7 @@ pub fn update_screen_translation(windows: Query<&Window>, mut screen_translation
         return;
     }
 
-    let offset_x = (window.width() as usize - 100 - size.width) / 2 + 100;
+    let offset_x = ((window.width() - MENU_WIDTH) as usize - size.width) / 2 + MENU_WIDTH as usize;
     let offset_y = (window.height() as usize - size.height) / 2;
 
     screen_translation.0.screen_view.offset = Position::from((offset_x, offset_y));
@@ -47,7 +47,7 @@ pub fn create_tile_sprite(tile_status: TileStatus, reveal_status: RevealStatus, 
 pub fn get_tile_offset(world_size: Size2D, tile_size: f32, offset_x: f32, offset_y: f32) -> Vec3 {
     Vec3::new(
         (world_size.width as f32 / 2. * -tile_size) + (tile_size / 2.) + (offset_x / 2.),
-        (world_size.height as f32 / 2. * -tile_size) + (tile_size / 2.) + (offset_y / 2.),
+        (world_size.height as f32 / 2. * tile_size) - (tile_size / 2.) - (offset_y / 2.),
         0.0,
     )
 }
@@ -55,7 +55,7 @@ pub fn get_tile_offset(world_size: Size2D, tile_size: f32, offset_x: f32, offset
 pub fn get_tile_transform(offset: Vec3, position: Position, tile_size: f32) -> Transform {
     Transform::from_translation(Vec3::new(
         tile_size * position.x as f32 + offset.x,
-        tile_size * position.y as f32 + offset.y,
+        tile_size * (-position.y) as f32 + offset.y,
         10.,
     ))
 }
